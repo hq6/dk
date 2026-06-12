@@ -1,0 +1,79 @@
+name: Build Releases
+
+on:
+  push:
+    tags:
+     - v*
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+permissions:
+  contents: write
+
+# NB: We clone the repo in the create-release and publish-release steps because
+# the gh command line requires the git repository even creating and publishing
+# releases.
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: create-release
+      run: |
+        gh repo clone ${{ github.repository }} -- --depth=1 --branch ${{ github.ref_name }}
+        cd dk
+        gh release delete ${{ github.ref_name }} -y || true
+        gh release create ${{ github.ref_name }} --draft --verify-tag --title ${{ github.ref_name }}
+  build-linux-artifact:
+    runs-on: ubuntu-latest
+    needs: create-release
+    steps:
+    - name: build-upload-linux-intel-artifact
+      run: |
+        gh repo clone ${{ github.repository }} -- --depth=1 --branch ${{ github.ref_name }}
+        cd dk
+        make
+        tarball="dk-linux-gnu-x86_64.tar.gz"
+        tar cvfz "$tarball" dk bin/install.sh bin/uninstall.sh completions/*.sh
+        gh release upload ${{ github.ref_name }} "$tarball" --clobber
+
+  build-osx-intel-artifact:
+    runs-on: macos-15-intel
+    needs: create-release
+    steps:
+    - uses: actions/setup-go@v6
+      with:
+        go-version: '1.25'
+    - name: build-upload-macos-intel-artifact
+      run: |
+        gh repo clone ${{ github.repository }} -- --depth=1 --branch ${{ github.ref_name }}
+        cd dk
+        make
+        tarball="dk-darwin-x86_64.tar.gz"
+        tar cvfz "$tarball" dk bin/install.sh bin/uninstall.sh completions/*.sh
+        gh release upload ${{ github.ref_name }} "$tarball" --clobber
+
+  build-osx-arm-artifact:
+    runs-on: macos-15
+    needs: create-release
+    steps:
+    - uses: actions/setup-go@v6
+      with:
+        go-version: '1.25'
+    - name: build-upload-macos-arm-artifact
+      run: |
+        gh repo clone ${{ github.repository }} -- --depth=1 --branch ${{ github.ref_name }}
+        cd dk
+        make
+        tarball="dk-darwin-arm64.tar.gz"
+        tar cvfz "$tarball" dk bin/install.sh bin/uninstall.sh completions/*.sh
+        gh release upload ${{ github.ref_name }} "$tarball" --clobber
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: [build-linux-artifact, build-osx-intel-artifact, build-osx-arm-artifact]
+    steps:
+    - name: publish-release
+      run: |
+        gh repo clone ${{ github.repository }} -- --depth=1 --branch ${{ github.ref_name }}
+        cd dk
+        gh release edit ${{ github.ref_name }} --draft=false

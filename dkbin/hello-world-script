@@ -1,0 +1,12 @@
+#!/bin/bash
+# SUMMARY: Say hello world
+# HELP:
+#
+# USAGE
+#    dk hello-world-script
+#
+# DESCRIPTION
+#    This is a test command to demonstrate how to write a script that is
+#    compatible with dk.
+
+echo "Hello dk!"
