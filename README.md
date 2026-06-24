@@ -1,8 +1,7 @@
 # dk
 
-`dk` stands for "discover kommand". It is a command line tool to help organize
-and discover local command line tools, and make it easier to view their
-documentation.
+`dk` ( "discover kommand" ) organizes command line tools, making it easier to
+discover them and view their documentation.
 
 `dk` will look for executable scripts and binaries under directories named
 `dkbin` in the current working directory and its parents.
