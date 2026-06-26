@@ -65,7 +65,7 @@ dk hello-<TAB>
 ```
 
 If tab completion is failing, please ensure that on-screen instructions printed
-by the install script have been followed.
+by the install script have been followed for your shell.
 
 ## Usage
 

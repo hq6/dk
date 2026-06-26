@@ -34,6 +34,8 @@ cp dk "$INSTALL_TARGET_DIR"
 mkdir -p "$BASH_COMPLETION_DIR" "$ZSH_COMPLETION_DIR"
 
 >&2 cat <<EOF
+------------------------------------------------------------
+
 Installing bash completions into '$BASH_COMPLETION_DIR'.
 If you are running an older Intel mac and completions are not working you may
 need to ensure '$HOME/.bash_profile' has the following line:
@@ -44,10 +46,23 @@ EOF
 cp completions/bash-completion.sh "$BASH_COMPLETION_DIR/dk"
 
 >&2 cat <<EOF
+------------------------------------------------------------
+
 Installing zsh completions into '$ZSH_COMPLETION_DIR'.
 Please ensure that this directory is set in your \$fpath
-before the following lines in your $HOME/.zshrc:
+before the following lines in $HOME/.zshrc:
+  autoload -Uz compinit
+  compinit
+
+If you are unsure how to proceed, you can add the following lines to
+the end of $HOME/.zshrc
+
+  fpath=(
+      ~/.local/share/zsh/site-functions
+      \$fpath
+  )
   autoload -Uz compinit
   compinit
 EOF
+
 cp completions/zsh-completion.sh "${ZSH_COMPLETION_DIR}/_dk"
