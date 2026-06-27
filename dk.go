@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/square/exit"
@@ -11,13 +12,29 @@ import (
 
 func main() {
 	paths := []string{}
-	dir, _ := os.Getwd()
-	for dir != "/" {
-		path := dir + "/dkbin"
-		if _, err := os.Stat(path); err == nil {
-			paths = append(paths, path)
+	pwd, _ := os.Getwd()
+	starting_paths := []string{pwd}
+
+	if os.Getenv("DKBIN_SEARCH_PATH") != "" {
+		starting_paths = filepath.SplitList(os.Getenv("DKBIN_SEARCH_PATH"))
+	}
+
+	for _, dir := range starting_paths {
+		dir, err := filepath.Abs(dir)
+		if err != nil {
+			// Skip paths that do not resolve
+			continue
 		}
-		dir = filepath.Dir(dir)
+		for ; dir != "/"; dir = filepath.Dir(dir) {
+			path := dir + "/dkbin"
+			// Ignore duplicate dkbin directories
+			if slices.Contains(paths, path) {
+				continue
+			}
+			if _, err := os.Stat(path); err == nil {
+				paths = append(paths, path)
+			}
+		}
 	}
 
 	home := os.Getenv("HOME")
