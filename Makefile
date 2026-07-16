@@ -1,7 +1,7 @@
 all: dk completions/.built dkbin/hello-world-bin
 
 dk: dk.go
-	go build .
+	CGO_ENABLED=0 go build .
 
 completions/.built: completions/generate-completions.go
 	go run completions/generate-completions.go
